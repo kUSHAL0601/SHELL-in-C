@@ -51,7 +51,7 @@ int main()
 						}
 						else
 						{
-							i+=4;
+							while(arg[i+1][0]!=';'){i++;}
 							continue;
 						}
 					}
@@ -74,7 +74,7 @@ int main()
 						}
 						else
 						{
-							i+=2;
+							while(arg[i+1][0]!=';'){i++;}
 							continue;
 						}
 					}
@@ -107,6 +107,7 @@ int main()
 						}
 						else
 						{
+							while(arg[i+1][0]!=';'){i++;}
 							continue;
 						}
 					}
@@ -167,6 +168,7 @@ int main()
 						}
 						else
 						{
+							while(arg[i+1][0]!=';'){i++;}
 							continue;
 						}
 					}
@@ -182,6 +184,7 @@ int main()
 						}
 						else
 						{
+							while(arg[i+1][0]!=';'){i++;}
 							continue;
 						}
 					}

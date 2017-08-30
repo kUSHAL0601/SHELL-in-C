@@ -118,8 +118,8 @@ void gen_pinfo_child()
 	printf("Executable Path: %s\n",exec);
 	printf("Memory Usage %ld\n",usage.ru_maxrss);
 	fclose(file);
-printf(RESET "pinfo with pid %d exited normally\n" RESET,getpid() );
-kill(getpid(),SIGKILL);
-ampcount--;
-exit(0);
+	printf(RESET "pinfo with pid %d exited normally\n" RESET,getpid() );
+	kill(getpid(),SIGKILL);
+	ampcount--;
+	exit(0);
 }
