@@ -32,6 +32,7 @@ void gen_echo_child()
 		if(arg[lst][0]==';')break;
 		else lst++;
 	}
+	lst --;
 	for(k=i+1;k<lst;k++)
 	{
 		for(j=0;j<strlen(arg[k]);j++)
