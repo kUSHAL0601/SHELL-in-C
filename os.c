@@ -217,6 +217,7 @@ int main()
 				else
 				{
 					printf(RED "Enter a valid command" RESET "\n");
+					break;
 				}
 			}
 
