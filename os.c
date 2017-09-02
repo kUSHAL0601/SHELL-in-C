@@ -6,6 +6,9 @@
 #include "user_input.h"
 #include "pwd_function.h"
 #include "pinfo_function.h"
+#include "dirty.h"
+#include "interrupt.h"
+
 int main()
 {
 	getcwd(pr_dir, sizeof(pr_dir));
@@ -33,7 +36,7 @@ int main()
 				if(arg[i][0]==';')
 					continue;
 
-				if(strcmp(arg[i],"q")==0)
+				if(strcmp(arg[i],"e")==0)
 					exit(0);
 
 				else if(strcmp(arg[i],"cd")==0)
@@ -190,6 +193,26 @@ int main()
 					}
 					else
 						pinfo_function();
+				}
+				else if(strcmp(arg[i],"nightswatch")==0)
+				{
+					if(strcmp(arg[i+1],"-n")!=0 || arg[i+2][0]==';' || arg[i+3][0]==';')
+					{
+						printf(RED "Invalid Input\n Proper format is:\t nightswatch -n [seconds] [command]" RESET "\n");
+						if(arg[i+1][0]==';')i+=1;
+						else if(arg[i+2][0]==';')i+=2;
+						else if(arg[i+3][0]==';')i+=3;
+					}
+		
+					else if(strcmp(arg[i+3],"dirty")!=0 && strcmp(arg[i+3],"interrupt")!=0)
+						printf(RED "command can be either 'dirty' or 'interrupt'" RESET "\n");
+		
+					else if(strcmp(arg[i+3],"dirty")==0)
+						dirty();
+		
+					else if(strcmp(arg[i+3],"interrupt")==0)
+						interrupt();
+
 				}
 				else
 				{
