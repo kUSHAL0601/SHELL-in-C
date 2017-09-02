@@ -21,6 +21,7 @@ int getch2()
 
 void interrupt()
 {
+		int pcnt=0;
 		int waittime = atoi(arg[i+2]);
 
 		time_t starttime,curtime;
@@ -32,15 +33,20 @@ void interrupt()
 			while(1)
 			{
 				curtime = time(NULL);
-				if(curtime - starttime >= waittime)
+				if(curtime - starttime >= waittime) 
 					break;
 			}	
 
 			FILE * fp = fopen("/proc/interrupts","r");
 			int	linecount=0;
 			while (fgets(line, sizeof(line), fp) != NULL)
-			{   
-		
+			{
+
+				if (strstr(line,"CPU") && pcnt==0)
+				{
+					printf("%s", line);
+					pcnt=1;
+				}	
 				if (strstr(line,"i8042"))
 				{
 					printf("%s", line);

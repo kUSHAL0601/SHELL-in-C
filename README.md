@@ -16,3 +16,9 @@ HOW TO RUN:
 ===========
 
 > Just type make and run ./SHELL file generated
+
+NOTE:
+-----
+
+> q followed by <enter> ends nightswatch
+> e in CLI quits the shell
