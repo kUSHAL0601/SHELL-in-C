@@ -1,3 +1,0 @@
-INSIDE CHANGED OUTPUTREDIRECT RETURNED
-[31mEnter a valid command[0m
-[36m<root@[0m[36mLinux:[0m[36m~>[0m
