@@ -26,12 +26,12 @@ Extra commands:
 HOW TO RUN:
 ===========
 
-> Just type make.
-> Run ./SHELL
++ Just type make.
++ Run ./SHELL
 
 
 NOTE:
 -----
 
-> q followed by <enter> ends nightswatch
-> quit in CLI quits the shell
++ q followed by <enter> ends nightswatch
++ quit in CLI quits the shell
