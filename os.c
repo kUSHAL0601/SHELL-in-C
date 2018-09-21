@@ -8,13 +8,67 @@
 #include "pinfo_function.h"
 #include "dirty.h"
 #include "interrupt.h"
+#include "setenv.h"
+#include "unsetenv.h"
+#include "jobs.h"
+#include "redirect.h"
+#include "ampfunction.h"
+#include "pipfunction.h"
+#include "kjob.h"
+#include "bg.h"
+#include "fg.h"
+#include "overkill.h"
+
+volatile int gTerminate = 0;
+volatile int gTerminate1 = 0;
+
+void SIGTSTP_handler(int signal_num)
+{
+	printf("CZ PRESSED\n");
+	if(signal_num == SIGTSTP)
+	{
+		if(fork()==0)
+		{
+			gTerminate1=1;
+			signal(SIGTSTP,&SIGTSTP_handler);
+		}
+		else
+		{
+			gTerminate=0;
+			gTerminate1=0;
+		}
+	}
+
+
+}
+
+void sigkill(int p)
+{
+//    printf("HERE\n");
+    if(fork()==0)
+    {
+    gTerminate = 1;
+   	signal(SIGINT, &sigkill);
+    }
+    else
+    {
+    	gTerminate=0;
+    	gTerminate1=0;
+	}
+ //   signal(SIGINT, &sigkill);  
+}
 
 int main()
 {
+	signal(SIGINT, sigkill);
+	oin=dup(0);
+	oout=dup(1);
+	FILE *a=fopen( "jobs.txt","w" );
+	fclose(a);
 	getcwd(pr_dir, sizeof(pr_dir));
-	while(1)
+	while(gTerminate==0 && gTerminate1==0)
 	{
-		int t1,t2;
+		int t1=0,t2=0;
 		for(t1=0;t1<100;t1++)
 			for(t2=0;t2<1024;t2++)
 				arg[t1][t2]=0;
@@ -31,29 +85,87 @@ int main()
 		int len=i;
 		
 		for(i=0;i<=len;i++)
+			
 			if(strcmp(arg[i],"")!=0)
 			{
+				int redi=i,red=0;
+				int pipflag=0;
+				int pipc=i;
+				
+				while(arg[pipc][0]!=';')
+				{
+					if(arg[pipc][0]=='|')
+					{
+						pipflag=1;
+						break;
+					}
+					pipc++;
+				}
+
+				while(arg[redi][0]!=';' && pipflag!=1)
+				{
+					if(arg[redi][0]=='<' || arg[redi][0]=='>')
+					{
+						red=1;
+						break;
+					}
+					redi++;
+				}
+				
 				if(arg[i][0]==';')
 					continue;
 
-				if(strcmp(arg[i],"e")==0)
+				if(strcmp(arg[i],"quit")==0)
 					exit(0);
-
+				
+				if(pipflag==1)
+				{
+					pipfunction();
+				}
+				
+				else if(red==1)
+				{
+					if(ampcount==0)
+					{
+						redirect();
+					}
+					else
+					{
+						pid_t pidr=fork();
+						if(pidr==0)
+						{
+							redirect();
+							addtojobs(getpid(),arg[i]);
+							kill(getpid(),SIGKILL);
+						}
+					}
+				}
+				
 				else if(strcmp(arg[i],"cd")==0)
 				{
-					if(arg[i+2][0]==';')
+					int ampflag=0;
+					int j=i;
+					while(arg[j][0]!=';')
+					{
+						if(arg[j][0]=='&')
+							ampflag=1;
+						j++;
+					}
+					if(ampflag==0)
 					{
 						change_directory();
 					}
-					else if(arg[i+2][0]=='&')
+					else if(ampflag==1)
 					{
 						int pid = fork();
 						if (pid == 0 )
 						{
+							addtojobs(getpid(),arg[i]);
 							gen_cd_child();
 						}
 						else
 						{
+							wait(NULL);
 							while(arg[i+1][0]!=';'){i++;}
 							continue;
 						}
@@ -61,7 +173,7 @@ int main()
 					else
 						printf(RED "Error:Expected format cd <dirname>" RESET "\n");
 				}
-
+				
 				else if(strcmp(arg[i],"pwd")==0)
 				{
 					if(arg[i+1][0]==';')
@@ -73,10 +185,12 @@ int main()
 						int pid = fork();
 						if (pid == 0 )
 						{
+							addtojobs(getpid(),arg[i]);
 							gen_pwd_child();
 						}
 						else
 						{
+							wait(NULL);
 							while(arg[i+1][0]!=';'){i++;}
 							continue;
 						}
@@ -106,10 +220,12 @@ int main()
 						int pid = fork();
 						if (pid == 0 )
 						{
+							addtojobs(getpid(),arg[i]);
 							gen_echo_child();
 						}
 						else
 						{
+							wait(NULL);
 							while(arg[i+1][0]!=';'){i++;}
 							continue;
 						}
@@ -122,6 +238,7 @@ int main()
 
 				else if(strcmp(arg[i],"ls")==0)
 				{
+					int oi=i;
 					hid=0,lng=0,ap=0;
 					if(arg[i+1][0]==';')
 					{
@@ -167,15 +284,18 @@ int main()
 						int pid = fork();
 						if (pid == 0 )
 						{
+							addtojobs(getpid(),arg[oi]);
 							gen_ls_child();
 						}
 						else
 						{
+							wait(NULL);
 							while(arg[i+1][0]!=';'){i++;}
 							continue;
 						}
 					}
 				}
+				
 				else if(strcmp(arg[i],"pinfo")==0)
 				{
 					if(arg[i+1][0]=='&' || arg[i+2][0]=='&')
@@ -183,10 +303,12 @@ int main()
 						int pid = fork();
 						if (pid == 0 )
 						{
+							addtojobs(getpid(),arg[i]);
 							gen_pinfo_child();
 						}
 						else
 						{
+							wait(NULL);
 							while(arg[i+1][0]!=';'){i++;}
 							continue;
 						}
@@ -194,6 +316,7 @@ int main()
 					else
 						pinfo_function();
 				}
+				
 				else if(strcmp(arg[i],"nightswatch")==0)
 				{
 					if(strcmp(arg[i+1],"-n")!=0 || arg[i+2][0]==';' || arg[i+3][0]==';')
@@ -214,10 +337,69 @@ int main()
 						interrupt();
 
 				}
+				
+				else if(strcmp(arg[i],"setenv")==0)
+				{
+					if(arg[i+2][0]==';' || arg[i+3][0]==';')
+						set_env();
+					else
+						printf(RED "Expected format setenv varname [value]" RESET "\n");
+					while(arg[i][0]!=';')
+						i++;
+				}
+				
+				else if(strcmp(arg[i],"unsetenv")==0)
+				{
+					if(arg[i+2][0]==';')
+						unset_env();
+					else
+						printf(RED "Expected format unsetenv varname" RESET "\n");
+					while(arg[i][0]!=';')
+						i++;
+				}
+				
+				else if(strcmp(arg[i],"jobs")==0)
+				{
+					if(arg[i+1][0]==';')
+						jobs();
+					else
+						printf(RED "Expected format jobs" RESET "\n");
+					while(arg[i][0]!=';')
+						i++;
+				}
+				
+				else if(strcmp(arg[i],"kjob")==0)
+				{
+					kjob();
+				}
+				
+				else if(strcmp(arg[i],"overkill")==0)
+				{
+					if (arg[i+1][0]==';')
+					{
+						overkill();
+					}
+					else
+					{
+						printf("Format for OverKill\noverkill\n");
+					}
+				}
+
 				else
 				{
-					printf(RED "Enter a valid command" RESET "\n");
-					break;
+					char *cmd[105]={NULL};
+					int cmdindex=0;
+					int amppflag=0;
+					while (arg[i][0] != ';' )
+					{
+						if (arg[i][0] == '&')
+						{
+							amppflag=1;
+							break;
+						}
+						cmd[cmdindex++] = arg[i++];
+					}
+					ampfunction(amppflag,cmd);
 				}
 			}
 

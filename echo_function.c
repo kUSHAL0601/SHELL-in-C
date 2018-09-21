@@ -2,6 +2,9 @@
 
 void echo_function()
 {
+	char envvar[1000]={};
+	int el=0;
+	int ps=0;
 	int lst=i;
 	while(1)
 	{
@@ -10,6 +13,17 @@ void echo_function()
 	}
 	for(k=i+1;k<lst;k++)
 	{
+		if(arg[k][0]=='$')
+		{
+			for(j=1;j<strlen(arg[k]);j++)
+				envvar[el++]=arg[k][j];
+			if(getenv(envvar)!=NULL)
+				printf("%s",getenv(envvar));
+			else
+				ps=1;
+		}
+		else
+		{
 		for(j=0;j<strlen(arg[k]);j++)
 		{
 			if(arg[k][j]!='\"' && arg[k][j]!='\'')
@@ -17,7 +31,11 @@ void echo_function()
 				printf("%c",arg[k][j]);
 			}
 		}
-		printf(" ");
+		}
+		if(ps==0)
+			printf(" ");
+		else
+			ps=0;
 	}
 	printf("\n");
 	i=lst+1;

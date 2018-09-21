@@ -1,2 +1,2 @@
 SHELL: *.c
-	     gcc -o SHELL *.c -I.
+	     gcc -o SHELL -g *.c -I.

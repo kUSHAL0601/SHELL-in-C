@@ -18,6 +18,10 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #define RED "\x1b[31m"
 #define GREEN "\x1b[32m"
@@ -54,3 +58,8 @@ char exec[2000];
 char new_dir[2000];
 char procid[20];
 char line[1000];
+char proc;
+int chpids[100001];
+int chpids_counter;
+int oin;
+int oout;
